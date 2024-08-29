@@ -20,6 +20,7 @@ public class RoleController {
     @Autowired
     private IRoleService roleService;
 
+        //en este caso rol se comunica con permisos por lo que hago un autowired a permisos
     @Autowired
     private IPermissionsService permissionService;
 

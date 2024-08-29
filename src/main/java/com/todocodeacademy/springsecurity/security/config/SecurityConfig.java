@@ -41,11 +41,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(http-> {
-                    http.requestMatchers(HttpMethod.GET, "/holanoseg").permitAll();
-                    http.requestMatchers(HttpMethod.GET, "/holaseg").hasAuthority("READ");
-                    http.anyRequest().denyAll();
-                })
                 .build();
 
     }
@@ -79,38 +74,6 @@ public class SecurityConfig {
 
         return NoOpPasswordEncoder.getInstance();
     }
-
-    /*
-    //detalles de usuario
-    @Bean
-    public UserDetailsService userDetailsService(){
-
-        //list generica para cuardar detalles de usuario
-        List userDetailsList=new ArrayList<>();
-
-        //defino detalles de usuario
-        userDetailsList.add(User.withUsername("todocode")
-                .password("1234")
-                .roles("ADMIN")
-                .authorities("CREATE","READ","UPDATE","DELETE")
-                .build());
-
-        userDetailsList.add(User.withUsername("seguidor")
-                .password("1234")
-                .roles("USER")
-                .authorities("READ")
-                .build());
-
-        userDetailsList.add(User.withUsername("actualizador")
-                .password("1234")
-                .roles("USER")
-                .authorities("UPDATE")
-                .build());
-
-        //devuelve detalles en memoria
-        return new InMemoryUserDetailsManager(userDetailsList);
-
-    }*/
 
 
 }
