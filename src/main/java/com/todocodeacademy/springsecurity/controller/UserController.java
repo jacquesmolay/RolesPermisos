@@ -39,6 +39,8 @@ public class UserController {
 
         Set<Role> roleList = new HashSet<Role>();
         Role readRole;
+        //encriptar constrseña para eso creo encriptPassword en el IUserService
+        userSec.setPassword(userService.encriptPassword(userSec.getPassword()));
 
         // Recuperar la Permission/s por su ID
         for (Role role : userSec.getRolesList()){
