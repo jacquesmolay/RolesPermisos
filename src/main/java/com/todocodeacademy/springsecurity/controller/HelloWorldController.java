@@ -10,8 +10,8 @@ public class HelloWorldController {
 
 
     @GetMapping("/holaseg")
-    @PreAuthorize("hasAuthority('READ')")
-    public String secHelloWorld() {
+    @PreAuthorize("hasRole('ADMIN')")
+     public String secHelloWorld() {
 
         return "Hola Mundo TodoCode con seguridad";
     }
