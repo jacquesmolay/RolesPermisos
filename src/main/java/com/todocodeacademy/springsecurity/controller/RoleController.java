@@ -6,6 +6,7 @@ import com.todocodeacademy.springsecurity.services.IPermissionsService;
 import com.todocodeacademy.springsecurity.services.IRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -25,18 +26,21 @@ public class RoleController {
     private IPermissionsService permissionService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<List<Role>> getAllRoles() {
         List roles = roleService.findAll();
         return ResponseEntity.ok(roles);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Role> getRoleById(@PathVariable Long id) {
         Optional<Role> role = roleService.findById(id);
         return role.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity createRole(@RequestBody Role role) {
         Set<Permission> permissionList = new HashSet<Permission>();
         Permission readPermission;
@@ -54,5 +58,30 @@ public class RoleController {
         Role newRole = roleService.save(role);
         return ResponseEntity.ok(newRole);
     }
+
+    @PatchMapping("/editar/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String editRole(@PathVariable Long id, @RequestBody Role editRole){
+
+        //busco rol y lo guardo en una clase
+
+        ResponseEntity<Role> roleBuscar=this.getRoleById(id);
+        roleBuscar.getBody().setRole(editRole.getRole());
+        roleBuscar.getBody().setPermissionsList(editRole.getPermissionsList());
+
+        Role rolGrabar=new Role();
+        rolGrabar.setId(roleBuscar.getBody().getId());
+        rolGrabar.setRole(roleBuscar.getBody().getRole());
+        rolGrabar.setPermissionsList(roleBuscar.getBody().getPermissionsList());
+
+
+        this.createRole(rolGrabar);
+
+        return "elemento atualizado";
+
+
+
+    }
+
 
 }

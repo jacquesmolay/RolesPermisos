@@ -5,6 +5,7 @@ import com.todocodeacademy.springsecurity.services.IRoleService;
 import com.todocodeacademy.springsecurity.services.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -23,18 +24,21 @@ public class UserController {
     private IRoleService roleService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<List<UserSec>> getAllUsers() {
         List users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<UserSec> getUserById(@PathVariable Long id) {
         Optional<UserSec> user = userService.findById(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity createUser(@RequestBody UserSec userSec) {
 
         Set<Role> roleList = new HashSet<Role>();
