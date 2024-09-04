@@ -1,13 +1,22 @@
 package com.todocodeacademy.springsecurity.services;
 
+import com.todocodeacademy.springsecurity.dto.AuthLoginRequestDTO;
+import com.todocodeacademy.springsecurity.dto.AuthResponseDTO;
 import com.todocodeacademy.springsecurity.model.UserSec;
 import com.todocodeacademy.springsecurity.repository.IUserRepository;
+import com.todocodeacademy.springsecurity.utils.JwtUtils;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +28,12 @@ public class UserDetailsServiceImp implements UserDetailsService {
 //necesito acceder a los usuarios, por lo que instacio al servicio de usuarios
     @Autowired
     private IUserRepository userRepo;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     //metodo que implementa la interface UserDetailsService
     @Override
@@ -60,4 +75,38 @@ public class UserDetailsServiceImp implements UserDetailsService {
                 //lista contiene roles y permisos
                 authorityList);
     }
+
+    public AuthResponseDTO loginUser(@Valid AuthLoginRequestDTO authLoginRequest) {
+
+        //recuperamos nombre de usuario y contraseña
+        String username = authLoginRequest.username();
+        String password = authLoginRequest.password();
+
+        Authentication authentication = this.authenticate (username, password);
+        //si todo sale bien
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        //injecto depndencia de la clase JwtUtils
+        String accessToken = jwtUtils.createToken(authentication);
+        //envio datos al dto
+        AuthResponseDTO authResponseDTO = new AuthResponseDTO(username, "login ok", accessToken, true);
+        return authResponseDTO;
+    }
+
+    public Authentication authenticate (String username, String password) {
+        //con esto debo buscar el usuario
+        UserDetails userDetails = this.loadUserByUsername(username);
+
+        //arrojo exception si no encuentra nombre de contraseña
+        if (userDetails == null) {
+            throw new BadCredentialsException("Invalid username or password");
+        }
+        // si no es igual hao autowired de pssword encoder, clase es de java
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            throw new BadCredentialsException("Invalid username or password");
+        }
+        return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(), userDetails.getAuthorities());
+    }
+
+
+
 }
